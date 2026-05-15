@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Olfazeta">
+<meta name="theme-color" content="#1a1a1a">
+<title>Olfazeta Tool</title>
+<style>
+:root {
+  --bg: #0f0f0f;
+  --surface: #1c1c1e;
+  --surface2: #2c2c2e;
+  --border: rgba(255,255,255,0.1);
+  --accent: #c9a96e;
+  --accent2: #e8c98a;
+  --text: #f5f5f5;
+  --text2: #8e8e93;
+  --text3: #5a5a5e;
+  --success: #34c759;
+  --danger: #ff453a;
+  --warning: #ff9f0a;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overscroll-behavior: none;
+}
+/* HEADER */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(15,15,15,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: calc(var(--safe-top) + 12px) 16px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.header-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.logo { font-size: 20px; font-weight: 600; letter-spacing: -0.5px; }
+.logo span { color: var(--accent); }
+.metrics-row {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px;
+  scrollbar-width: none;
+}
+.metrics-row::-webkit-scrollbar { display: none; }
+.metric-chip {
+  flex-shrink: 0;
+  background: var(--surface2);
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--text2);
+}
+.metric-chip strong { color: var(--accent); font-weight: 600; }
+/* TABS */
+.tabs {
+  display: flex; gap: 4px;
+  background: var(--surface);
+  padding: 4px;
+  border-radius: var(--radius);
+  margin: 12px 16px;
+}
+.tab {
+  flex: 1; padding: 8px 4px;
+  border: none; background: none;
+  font-size: 12px; font-weight: 500;
+  color: var(--text2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.tab svg { width: 18px; height: 18px; }
+.tab.active {
+  background: var(--surface2);
+  color: var(--accent);
+}
+/* CONTENT */
+.content {
+  padding: 0 16px;
+  padding-bottom: calc(var(--safe-bottom) + 80px);
+}
+.section { display: none; }
+.section.active { display: block; }
+/* CARDS */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.card-header {
+  padding: 14px 16px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-bottom: 0.5px solid var(--border);
+}
+/* SEARCH */
+.search-wrap {
+  position: relative; margin-bottom: 12px;
+}
+.search-wrap svg {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 16px; color: var(--text3);
+}
+input[type=text], input[type=number], select {
+  width: 100%;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 15px;
+  padding: 10px 12px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.search-wrap input { padding-left: 36px; }
+input:focus, select:focus { border-color: var(--accent); }
+/* LIST ITEMS */
+.list-item {
+  display: flex; align-items: center;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--border);
+  gap: 12px;
+}
+.list-item:last-child { border-bottom: none; }
+.item-num {
+  width: 36px; height: 36px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: var(--accent);
+  flex-shrink: 0;
+}
+.item-info { flex: 1; min-width: 0; }
+.item-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-brand { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.item-right { text-align: right; flex-shrink: 0; }
+.item-price { font-size: 14px; font-weight: 600; color: var(--accent); }
+.item-size { font-size: 11px; color: var(--text3); margin-top: 2px; }
+/* BADGES */
+.badge {
+  display: inline-block; padding: 3px 8px;
+  border-radius: 100px; font-size: 11px; font-weight: 600;
+}
+.badge-ok { background: rgba(52,199,89,0.15); color: var(--success); }
+.badge-null { background: rgba(255,159,10,0.15); color: var(--warning); }
+.badge-kat { background: var(--surface2); color: var(--text2); }
+/* BUCHEN FORM */
+.form-group { padding: 14px 16px; border-bottom: 0.5px solid var(--border); }
+.form-group:last-child { border-bottom: none; }
+.form-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; }
+.seg-control {
+  display: flex; gap: 4px;
+  background: var(--surface2);
+  padding: 3px; border-radius: var(--radius-sm);
+}
+.seg-btn {
+  flex: 1; padding: 7px;
+  border: none; background: none;
+  font-size: 13px; font-weight: 500;
+  color: var(--text2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.seg-btn.active { background: var(--surface); color: var(--text); }
+.seg-btn.active.minus { color: var(--danger); }
+.seg-btn.active.plus { color: var(--success); }
+.btn-main {
+  width: 100%; padding: 14px;
+  background: var(--accent);
+  color: #0f0f0f;
+  border: none; border-radius: var(--radius);
+  font-size: 15px; font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: opacity 0.2s;
+}
+.btn-main:active { opacity: 0.8; }
+/* MSG */
+.msg {
+  padding: 12px 16px; border-radius: var(--radius);
+  font-size: 14px; margin-bottom: 12px;
+  display: none;
+}
+.msg-ok { background: rgba(52,199,89,0.15); color: var(--success); }
+.msg-err { background: rgba(255,69,58,0.15); color: var(--danger); }
+/* LOG */
+.log-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 16px; border-bottom: 0.5px solid var(--border);
+  font-size: 13px;
+}
+.log-item:last-child { border-bottom: none; }
+.log-diff { font-weight: 600; }
+/* KUNDEN */
+.btn-copy {
+  width: 100%; padding: 12px;
+  background: var(--surface2); color: var(--accent);
+  border: 0.5px solid var(--border); border-radius: var(--radius);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; margin-bottom: 12px;
+}
+.kunden-text {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--text2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* SECTION TITLE */
+.section-title {
+  font-size: 22px; font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 8px 0 16px;
+}
+/* FILTER ROW */
+.filter-row {
+  display: flex; gap: 8px; margin-bottom: 12px;
+}
+.filter-row select { flex: 1; }
+/* EMPTY */
+.empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text3);
+  font-size: 14px;
+}
+/* SUCHE RESULT CARD */
+.suche-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.suche-card-header {
+  padding: 14px 16px 10px;
+  border-bottom: 0.5px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.suche-card-name { font-size: 15px; font-weight: 600; }
+.suche-card-id { font-size: 12px; color: var(--text3); }
+.suche-card-body { padding: 12px 16px; display: flex; gap: 12px; flex-wrap: wrap; }
+.suche-detail { font-size: 12px; color: var(--text2); }
+.suche-detail strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">olfa<span>zeta</span></div>
+    <div id="header-wert" style="font-size:13px;color:var(--accent);font-weight:600"></div>
+  </div>
+  <div class="metrics-row">
+    <div class="metric-chip">Positionen: <strong id="m-pos">–</strong></div>
+    <div class="metric-chip">Stück: <strong id="m-stk">–</strong></div>
+    <div class="metric-chip">Gesamtwert: <strong id="m-wert">–</strong></div>
+    <div class="metric-chip">Nullbestand: <strong id="m-null">–</strong></div>
+  </div>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" onclick="showTab('bestand',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+    Bestand
+  </button>
+  <button class="tab" onclick="showTab('buchen',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Buchen
+  </button>
+  <button class="tab" onclick="showTab('suche',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    Suche
+  </button>
+  <button class="tab" onclick="showTab('kunden',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Kunden
+  </button>
+</div>
+
+<div class="content">
+
+<!-- BESTAND -->
+<div class="section active" id="tab-bestand">
+  <div class="section-title">Lagerbestand</div>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="filter-bestand" placeholder="ID oder Name filtern…" oninput="renderBestand()">
+  </div>
+  <div class="filter-row">
+    <select id="filter-kat" onchange="renderBestand()">
+      <option value="">Alle Kategorien</option>
+      <option value="Men">Men</option>
+      <option value="Women">Women</option>
+      <option value="Unisex">Unisex</option>
+      <option value="Luxury">Luxury</option>
+    </select>
+    <select id="filter-status" onchange="renderBestand()">
+      <option value="">Alle</option>
+      <option value="verfuegbar">Verfügbar</option>
+      <option value="null">Nullbestand</option>
+    </select>
+  </div>
+  <div class="card" id="bestand-list"></div>
+</div>
+
+<!-- BUCHEN -->
+<div class="section" id="tab-buchen">
+  <div class="section-title">Buchung</div>
+  <div id="buch-msg" class="msg"></div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="form-group">
+      <label class="form-label">Artikel-Nummer</label>
+      <input type="text" id="buch-id" placeholder="z.B. 94 oder 129" oninput="buchPreview()">
+    </div>
+    <div class="form-group" id="buch-preview-wrap" style="display:none">
+      <div id="buch-preview-content"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Menge</label>
+      <input type="number" id="buch-menge" value="1" min="1" max="999">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Aktion</label>
+      <div class="seg-control">
+        <button class="seg-btn active minus" id="seg-minus" onclick="setSeg('-')">— Abziehen (Verkauf)</button>
+        <button class="seg-btn plus" id="seg-plus" onclick="setSeg('+')">+ Hinzufügen</button>
+      </div>
+    </div>
+  </div>
+  <button class="btn-main" onclick="buchen()">Buchen</button>
+  <div class="card">
+    <div class="card-header">Buchungsprotokoll</div>
+    <div id="log-list"></div>
+  </div>
+</div>
+
+<!-- SUCHE -->
+<div class="section" id="tab-suche">
+  <div class="section-title">Duft suchen</div>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="suche-input" placeholder="Nummer, Name oder Marke…" oninput="sucheRender()">
+  </div>
+  <div id="suche-results"></div>
+</div>
+
+<!-- KUNDEN -->
+<div class="section" id="tab-kunden">
+  <div class="section-title">Kundenliste</div>
+  <div class="filter-row">
+    <select id="kunden-filter" onchange="kundenRender()">
+      <option value="alle">Alle Artikel</option>
+      <option value="verfuegbar">Nur verfügbar</option>
+    </select>
+  </div>
+  <button class="btn-copy" onclick="copyKunden()" id="copy-btn">📋 Kopieren</button>
+  <div class="kunden-text" id="kunden-output"></div>
+</div>
+
+</div>
+
+<script>
+const CATALOG = [
+  {id:'1',name:'One Million',brand:'Paco Rabanne',kat:'Men',size:'70ml',price:35},
+  {id:'2',name:'Acqua di Gio',brand:'Armani',kat:'Men',size:'70ml',price:35},
+  {id:'3',name:'Fahrenheit',brand:'Dior',kat:'Men',size:'70ml',price:35},
+  {id:'4',name:'The One',brand:'D&G',kat:'Men',size:'70ml',price:35},
+  {id:'6',name:'Opium',brand:'YSL',kat:'Women',size:'70ml',price:35},
+  {id:'7',name:'J\'Adore',brand:'Dior',kat:'Women',size:'70ml',price:35},
+  {id:'10',name:'Alien',brand:'Thierry Mugler',kat:'Women',size:'70ml',price:35},
+  {id:'11',name:'Light Blue',brand:'D&G',kat:'Women',size:'70ml',price:35},
+  {id:'12',name:'Eau de Sauvage',brand:'Dior',kat:'Men',size:'70ml',price:35},
+  {id:'14',name:'Manifesto',brand:'YSL',kat:'Women',size:'70ml',price:35},
+  {id:'15',name:'Roma',brand:'Laura Biagiotti',kat:'Men',size:'70ml',price:35},
+  {id:'16',name:'Le Male',brand:'Jean Paul Gaultier',kat:'Men',size:'70ml',price:35},
+  {id:'18',name:'Declaration',brand:'Cartier',kat:'Men',size:'70ml',price:35},
+  {id:'19',name:'Lady Million',brand:'Paco Rabanne',kat:'Women',size:'70ml',price:35},
+  {id:'20',name:'La Nuit de l\'Homme',brand:'YSL',kat:'Men',size:'70ml',price:35},
+  {id:'21',name:'Light Blue',brand:'D&G',kat:'Men',size:'70ml',price:35},
+  {id:'22',name:'Terre d\'Hermes',brand:'Hermes',kat:'Men',size:'70ml',price:35},
+  {id:'23',name:'Hypnotic Poison',brand:'Dior',kat:'Women',size:'70ml',price:35},
+  {id:'24',name:'Chanel N°5',brand:'Chanel',kat:'Women',size:'70ml',price:35},
+  {id:'25',name:'For Her',brand:'Narciso Rodriguez',kat:'Women',size:'70ml',price:35},
+  {id:'26',name:'Flower',brand:'Kenzo',kat:'Women',size:'70ml',price:35},
+  {id:'27',name:'Tresor',brand:'Lancôme',kat:'Women',size:'70ml',price:35},
+  {id:'28',name:'Angel',brand:'Thierry Mugler',kat:'Women',size:'70ml',price:35},
+  {id:'29',name:'L\'Eau d\'Issey',brand:'Issey Miyake',kat:'Women',size:'70ml',price:35},
+  {id:'30',name:'Black XS',brand:'Paco Rabanne',kat:'Men',size:'70ml',price:35},
+  {id:'32',name:'Spice Bomb',brand:'Viktor Rolf',kat:'Men',size:'70ml',price:35},
+  {id:'33',name:'Black Code',brand:'Armani',kat:'Men',size:'70ml',price:35},
+  {id:'37',name:'Man',brand:'Bvlgari',kat:'Men',size:'70ml',price:35},
+  {id:'38',name:'Bleu',brand:'Chanel',kat:'Men',size:'70ml',price:35},
+  {id:'39',name:'Miss Dior Cherie',brand:'Dior',kat:'Women',size:'70ml',price:35},
+  {id:'40',name:'Hypnose',brand:'Lancôme',kat:'Women',size:'70ml',price:35},
+  {id:'42',name:'La Vie Est Belle',brand:'Lancôme',kat:'Women',size:'70ml',price:35},
+  {id:'44',name:'Silver Mountain',brand:'Creed',kat:'Unisex',size:'70ml',price:48},
+  {id:'47',name:'Crystal Noir',brand:'Versace',kat:'Women',size:'70ml',price:35},
+  {id:'48',name:'Allure Men',brand:'Chanel',kat:'Men',size:'70ml',price:35},
+  {id:'49',name:'Dolce',brand:'D&G',kat:'Women',size:'70ml',price:35},
+  {id:'51',name:'Coco Mademoiselle',brand:'Chanel',kat:'Women',size:'70ml',price:35},
+  {id:'52',name:'Pasha de Cartier',brand:'Cartier',kat:'Men',size:'70ml',price:35},
+  {id:'53',name:'Narciso',brand:'Narciso Rodriguez',kat:'Women',size:'70ml',price:35},
+  {id:'54',name:'Black Orchid',brand:'Tom Ford',kat:'Unisex',size:'70ml',price:35},
+  {id:'55',name:'Black Opium',brand:'YSL',kat:'Women',size:'70ml',price:35},
+  {id:'56',name:'Ange ou Demon',brand:'Givenchy',kat:'Women',size:'70ml',price:35},
+  {id:'57',name:'Omnia Amethyste',brand:'Bvlgari',kat:'Women',size:'70ml',price:35},
+  {id:'61',name:'Invictus',brand:'Paco Rabanne',kat:'Men',size:'70ml',price:35},
+  {id:'62',name:'Intenso',brand:'D&G',kat:'Men',size:'70ml',price:35},
+  {id:'64',name:'Omnia Indian Garnet',brand:'Bvlgari',kat:'Women',size:'70ml',price:35},
+  {id:'67',name:'Olympéa',brand:'Paco Rabanne',kat:'Women',size:'70ml',price:35},
+  {id:'68',name:'Aventus',brand:'Creed',kat:'Men',size:'70ml',price:57},
+  {id:'69',name:'Acqua di Sale',brand:'Profumo di Roma',kat:'Men',size:'70ml',price:35},
+  {id:'70',name:'The One',brand:'D&G',kat:'Women',size:'70ml',price:35},
+  {id:'71',name:'Allure',brand:'Chanel',kat:'Women',size:'70ml',price:35},
+  {id:'72',name:'Patchouli',brand:'Réminiscence',kat:'Unisex',size:'70ml',price:35},
+  {id:'73',name:'Himalaya',brand:'Creed',kat:'Unisex',size:'70ml',price:48},
+  {id:'74',name:'Black Afgano',brand:'Nasomatto',kat:'Luxury',size:'50ml',price:52},
+  {id:'75',name:'X for Men',brand:'Clive Christian',kat:'Luxury',size:'50ml',price:52},
+  {id:'76',name:'Acqua di Gioia',brand:'Armani',kat:'Women',size:'70ml',price:35},
+  {id:'79',name:'Myslf',brand:'YSL',kat:'Men',size:'70ml',price:35},
+  {id:'80',name:'Si',brand:'Armani',kat:'Women',size:'70ml',price:35},
+  {id:'81',name:'Classique Essence',brand:'Jean Paul Gaultier',kat:'Women',size:'70ml',price:35},
+  {id:'82',name:'Signorina',brand:'Salvatore Ferragamo',kat:'Women',size:'70ml',price:35},
+  {id:'84',name:'Blue Dylan',brand:'Versace',kat:'Men',size:'70ml',price:35},
+  {id:'85',name:'Chance',brand:'Chanel',kat:'Women',size:'70ml',price:35},
+  {id:'86',name:'Legend',brand:'Mont Blanc',kat:'Men',size:'70ml',price:35},
+  {id:'87',name:'Wanted',brand:'Azzaro',kat:'Men',size:'70ml',price:35},
+  {id:'88',name:'Man in Black',brand:'Bvlgari',kat:'Men',size:'70ml',price:35},
+  {id:'89',name:'Mon Paris',brand:'YSL',kat:'Women',size:'70ml',price:35},
+  {id:'90',name:'Poison Girl',brand:'Dior',kat:'Women',size:'70ml',price:35},
+  {id:'91',name:'Chrome',brand:'Azzaro',kat:'Men',size:'70ml',price:35},
+  {id:'93',name:'Aventus for Her',brand:'Creed',kat:'Women',size:'70ml',price:57},
+  {id:'94',name:'Sauvage',brand:'Dior',kat:'Men',size:'70ml',price:48},
+  {id:'96',name:'Gabrielle',brand:'Chanel',kat:'Women',size:'70ml',price:35},
+  {id:'97',name:'Amo Ferragamo',brand:'Salvatore Ferragamo',kat:'Women',size:'70ml',price:35},
+  {id:'98',name:'Joy',brand:'Dior',kat:'Women',size:'70ml',price:35},
+  {id:'99',name:'Mandarinodi Amalfi',brand:'Tom Ford',kat:'Unisex',size:'70ml',price:45},
+  {id:'100',name:'White Aoud',brand:'Montale',kat:'Unisex',size:'70ml',price:35},
+  {id:'101',name:'Velvet Amber Skin',brand:'D&G',kat:'Luxury',size:'50ml',price:52},
+  {id:'102',name:'Velvet Amber Sun',brand:'D&G',kat:'Luxury',size:'50ml',price:52},
+  {id:'105',name:'Intense Cafe',brand:'Montale',kat:'Unisex',size:'70ml',price:35},
+  {id:'106',name:'Fucking Fabalous',brand:'Tom Ford',kat:'Luxury',size:'50ml',price:52},
+  {id:'109',name:'A Lór (J\'Adore)',brand:'Dior',kat:'Luxury',size:'50ml',price:52},
+  {id:'110',name:'Kirkè',brand:'Tiziana Terenzi',kat:'Unisex',size:'70ml',price:48},
+  {id:'111',name:'Lost Cherry',brand:'Tom Ford',kat:'Luxury',size:'50ml',price:52},
+  {id:'112',name:'Neroli Portofino',brand:'Tom Ford',kat:'Luxury',size:'50ml',price:52},
+  {id:'113',name:'Sur la Route',brand:'Louis Vuitton',kat:'Men',size:'70ml',price:57},
+  {id:'114',name:'Omre Nomade',brand:'Louis Vuitton',kat:'Unisex',size:'70ml',price:48},
+  {id:'115',name:'Idole',brand:'Lancôme',kat:'Women',size:'70ml',price:35},
+  {id:'116',name:'Yes I Am',brand:'Cacharel',kat:'Women',size:'70ml',price:35},
+  {id:'117',name:'Tobacco Vanille',brand:'Tom Ford',kat:'Luxury',size:'50ml',price:52},
+  {id:'118',name:'Baccarat Rouge 540',brand:'MFK',kat:'Luxury',size:'50ml',price:52},
+  {id:'119',name:'Scandal',brand:'Jean Paul Gaultier',kat:'Women',size:'70ml',price:35},
+  {id:'120',name:'La Petite Robe Noir',brand:'Guerlain',kat:'Women',size:'70ml',price:35},
+  {id:'121',name:'L\'Inderdit',brand:'Givenchy',kat:'Women',size:'70ml',price:35},
+  {id:'122',name:'Libre',brand:'YSL',kat:'Women',size:'70ml',price:48},
+  {id:'123',name:'Good Girl Gone Bad',brand:'Kilian',kat:'Luxury',size:'50ml',price:52},
+  {id:'124',name:'Zeta',brand:'Morph',kat:'Luxury',size:'50ml',price:52},
+  {id:'125',name:'Sole di Positano',brand:'Tom Ford',kat:'Luxury',size:'50ml',price:52},
+  {id:'126',name:'Soleil Blanc',brand:'Tom Ford',kat:'Luxury',size:'50ml',price:52},
+  {id:'127',name:'Oud Wood',brand:'Tom Ford',kat:'Luxury',size:'50ml',price:52},
+  {id:'128',name:'Vanille Fatale',brand:'Tom Ford',kat:'Luxury',size:'50ml',price:52},
+  {id:'129',name:'Erba Pura',brand:'Xerjoff',kat:'Luxury',size:'50ml',price:52},
+  {id:'130',name:'Megamare',brand:'Orto Parisi',kat:'Luxury',size:'50ml',price:65},
+  {id:'131',name:'Good Girl',brand:'Carolina Herrera',kat:'Women',size:'70ml',price:48},
+  {id:'132',name:'My Way',brand:'Armani',kat:'Women',size:'70ml',price:45},
+  {id:'133',name:'Paradox',brand:'Prada',kat:'Women',size:'70ml',price:35},
+  {id:'134',name:'Bitter Peach',brand:'Tom Ford',kat:'Luxury',size:'50ml',price:52},
+  {id:'135',name:'Bois d\'Argent',brand:'Dior',kat:'Unisex',size:'70ml',price:57},
+  {id:'136',name:'Homme Intense',brand:'Dior',kat:'Men',size:'70ml',price:45},
+  {id:'137',name:'Naxos',brand:'Xerjoff',kat:'Luxury',size:'50ml',price:52},
+  {id:'138',name:'Ojar',brand:'Wood Whisper',kat:'Luxury',size:'50ml',price:52},
+  {id:'139',name:'Les Sables Roses',brand:'Louis Vuitton',kat:'Luxury',size:'50ml',price:65},
+  {id:'140',name:'Eros',brand:'Versace',kat:'Men',size:'70ml',price:35},
+  {id:'141',name:'Dubai-Turath',brand:'Spirit of Dubai',kat:'Luxury',size:'50ml',price:65},
+  {id:'142',name:'Ombre Leather',brand:'Tom Ford',kat:'Unisex',size:'70ml',price:57},
+  {id:'143',name:'Vanilla Powder',brand:'Matière Première',kat:'Luxury',size:'50ml',price:52},
+  {id:'144',name:'Bianco Latte',brand:'Giardini di Toscana',kat:'Luxury',size:'50ml',price:52},
+  {id:'145',name:'Devotion',brand:'D&G',kat:'Women',size:'70ml',price:35},
+  {id:'146',name:'Rouge',brand:'Balmain',kat:'Luxury',size:'50ml',price:52},
+  {id:'147',name:'Bottled Absolut',brand:'Hugo Boss',kat:'Men',size:'70ml',price:35},
+  {id:'148',name:'Goddess',brand:'Burberry',kat:'Women',size:'70ml',price:35},
+  {id:'150',name:'Hugo',brand:'Hugo Boss',kat:'Men',size:'70ml',price:35},
+  {id:'151',name:'Guilty',brand:'Gucci',kat:'Women',size:'70ml',price:35},
+  {id:'152',name:'Guilty',brand:'Gucci',kat:'Men',size:'70ml',price:35},
+  {id:'153',name:'Chloè',brand:'Chloè',kat:'Women',size:'70ml',price:35},
+  {id:'154',name:'Love, Chloè',brand:'Chloè',kat:'Women',size:'70ml',price:35},
+  {id:'155',name:'CK One',brand:'Calvin Klein',kat:'Unisex',size:'70ml',price:35},
+  {id:'156',name:'Hugo',brand:'Hugo Boss',kat:'Women',size:'70ml',price:35},
+  {id:'157',name:'Boss The Scent',brand:'Hugo Boss',kat:'Men',size:'70ml',price:35},
+  {id:'158',name:'Flora',brand:'Gucci',kat:'Women',size:'70ml',price:35},
+  {id:'159',name:'Burberry for Women',brand:'Burberry',kat:'Women',size:'70ml',price:35},
+  {id:'160',name:'Burberry for Men',brand:'Burberry',kat:'Men',size:'70ml',price:35},
+  {id:'161',name:'Born in Roma Intense',brand:'Valentino Donna',kat:'Women',size:'70ml',price:35},
+  {id:'162',name:'Born in Roma Intense',brand:'Valentino Uomo',kat:'Men',size:'70ml',price:35},
+  {id:'163',name:'Miutine',brand:'Miu Miu',kat:'Women',size:'70ml',price:45},
+  {id:'164',name:'Milano',brand:'Prada',kat:'Men',size:'70ml',price:45},
+  {id:'3157',name:'Boss The Scent',brand:'Hugo Boss',kat:'Men',size:'30ml',price:18},
+];
+
+const INIT_STOCK = {
+  '1':{qty:1},'68':{qty:1},'94':{qty:3},'126':{qty:0},'127':{qty:2},
+  '129':{qty:4},'131':{qty:1},'132':{qty:2},'137':{qty:0},'138':{qty:2},
+  '139':{qty:1},'140':{qty:1},'144':{qty:0},'145':{qty:1},'3157':{qty:1}
+};
+
+// Load from localStorage or use initial
+let stock = JSON.parse(localStorage.getItem('olfazeta_stock') || JSON.stringify(INIT_STOCK));
+let log = JSON.parse(localStorage.getItem('olfazeta_log') || '[]');
+let buchOp = '-';
+
+function save() {
+  localStorage.setItem('olfazeta_stock', JSON.stringify(stock));
+  localStorage.setItem('olfazeta_log', JSON.stringify(log.slice(0,50)));
+}
+
+function getCatalog(id) { return CATALOG.find(c => c.id === String(id)) || null; }
+function eur(n) { return n.toFixed(2).replace('.', ',') + ' €'; }
+
+function updateMetrics() {
+  const ids = Object.keys(stock);
+  let qty = 0, val = 0, nulls = 0;
+  ids.forEach(id => {
+    const c = getCatalog(id); if (!c) return;
+    qty += stock[id].qty;
+    val += stock[id].qty * c.price;
+    if (stock[id].qty === 0) nulls++;
+  });
+  document.getElementById('m-pos').textContent = ids.length;
+  document.getElementById('m-stk').textContent = qty;
+  document.getElementById('m-wert').textContent = eur(val);
+  document.getElementById('m-null').textContent = nulls;
+  document.getElementById('header-wert').textContent = eur(val);
+}
+
+function renderBestand() {
+  const f = (document.getElementById('filter-bestand').value || '').toLowerCase();
+  const kat = document.getElementById('filter-kat').value;
+  const status = document.getElementById('filter-status').value;
+  const ids = Object.keys(stock).sort((a, b) => parseFloat(a) - parseFloat(b));
+  let html = '';
+  ids.forEach(id => {
+    const q = stock[id].qty;
+    const c = getCatalog(id); if (!c) return;
+    if (kat && c.kat !== kat) return;
+    if (status === 'verfuegbar' && q === 0) return;
+    if (status === 'null' && q > 0) return;
+    const search = id + c.name.toLowerCase() + c.brand.toLowerCase();
+    if (f && !search.includes(f)) return;
+    const badge = q > 0
+      ? `<span class="badge badge-ok">${q}</span>`
+      : `<span class="badge badge-null">0</span>`;
+    html += `<div class="list-item">
+      <div class="item-num">${id}</div>
+      <div class="item-info">
+        <div class="item-name">${c.name}</div>
+        <div class="item-brand">${c.brand} · <span class="badge badge-kat" style="font-size:10px;padding:2px 6px">${c.kat}</span></div>
+      </div>
+      <div class="item-right">
+        <div class="item-price">${eur(c.price)}</div>
+        <div class="item-size">${c.size} · ${badge}</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('bestand-list').innerHTML = html || '<div class="empty">Keine Einträge gefunden.</div>';
+  updateMetrics();
+}
+
+function setSeg(op) {
+  buchOp = op;
+  document.getElementById('seg-minus').classList.toggle('active', op === '-');
+  document.getElementById('seg-plus').classList.toggle('active', op === '+');
+}
+
+function buchPreview() {
+  const id = document.getElementById('buch-id').value.trim();
+  const wrap = document.getElementById('buch-preview-wrap');
+  const content = document.getElementById('buch-preview-content');
+  const c = getCatalog(id);
+  if (!c) { wrap.style.display = 'none'; return; }
+  const qty = stock[id] !== undefined ? stock[id].qty : '–';
+  wrap.style.display = 'block';
+  content.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <div style="font-size:14px;font-weight:600">${c.name}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px">${c.brand} · ${c.size} · ${eur(c.price)}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:12px;color:var(--text2)">Bestand</div>
+      <div style="font-size:18px;font-weight:700;color:var(--accent)">${qty}</div>
+    </div>
+  </div>`;
+}
+
+function buchen() {
+  const idRaw = document.getElementById('buch-id').value.trim();
+  const menge = parseInt(document.getElementById('buch-menge').value) || 1;
+  const msg = document.getElementById('buch-msg');
+  if (!idRaw) { showMsg(msg, 'Bitte Artikel-Nummer eingeben.', 'err'); return; }
+  const c = getCatalog(idRaw);
+  if (!c) { showMsg(msg, `Nummer ${idRaw} nicht im Katalog.`, 'err'); return; }
+  if (!(idRaw in stock)) { showMsg(msg, `Nr. ${idRaw} nicht im Bestand. Bitte zuerst anlegen.`, 'err'); return; }
+  const vorher = stock[idRaw].qty;
+  const nachher = buchOp === '+' ? vorher + menge : Math.max(0, vorher - menge);
+  stock[idRaw].qty = nachher;
+  log.unshift({ id: idRaw, name: c.name, size: c.size, vorher, nachher, diff: (buchOp === '+' ? '+' : '-') + menge, ts: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) });
+  save();
+  renderLog();
+  renderBestand();
+  showMsg(msg, `✓ ${c.name}: ${vorher} → ${nachher} Stk`, 'ok');
+  document.getElementById('buch-id').value = '';
+  document.getElementById('buch-preview-wrap').style.display = 'none';
+}
+
+function renderLog() {
+  const el = document.getElementById('log-list');
+  if (!log.length) { el.innerHTML = '<div class="empty">Noch keine Buchungen.</div>'; return; }
+  el.innerHTML = log.slice(0, 20).map(l => `
+    <div class="log-item">
+      <div>
+        <div style="font-size:13px;font-weight:500">${l.id} – ${l.name}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${l.ts || ''} · ${l.size}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="log-diff" style="color:${l.diff.startsWith('+') ? 'var(--success)' : 'var(--danger)'}">${l.diff}</div>
+        <div style="font-size:11px;color:var(--text3)">${l.vorher} → ${l.nachher}</div>
+      </div>
+    </div>`).join('');
+}
+
+function showMsg(el, txt, type) {
+  el.textContent = txt;
+  el.className = 'msg msg-' + (type === 'ok' ? 'ok' : 'err');
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+function sucheRender() {
+  const q = (document.getElementById('suche-input').value || '').toLowerCase();
+  const res = document.getElementById('suche-results');
+  if (!q) { res.innerHTML = ''; return; }
+  const matches = CATALOG.filter(c =>
+    c.id === q || c.name.toLowerCase().includes(q) || c.brand.toLowerCase().includes(q)
+  );
+  if (!matches.length) { res.innerHTML = '<div class="empty">Kein Ergebnis.</div>'; return; }
+  res.innerHTML = matches.slice(0, 12).map(c => {
+    const inStock = stock[c.id];
+    const qty = inStock !== undefined ? inStock.qty : null;
+    const badge = qty !== null
+      ? (qty > 0 ? `<span class="badge badge-ok">${qty} Stk</span>` : `<span class="badge badge-null">0 Stk</span>`)
+      : `<span class="badge badge-kat">kein Bestand</span>`;
+    return `<div class="suche-card">
+      <div class="suche-card-header">
+        <div>
+          <div class="suche-card-name">${c.name}</div>
+          <div class="suche-card-id">${c.brand}</div>
+        </div>
+        ${badge}
+      </div>
+      <div class="suche-card-body">
+        <div class="suche-detail">Nr: <strong>${c.id}</strong></div>
+        <div class="suche-detail">Größe: <strong>${c.size}</strong></div>
+        <div class="suche-detail">Preis: <strong>${eur(c.price)}</strong></div>
+        <div class="suche-detail">Typ: <strong>${c.kat}</strong></div>
+        ${qty !== null ? `<div class="suche-detail">Lagerwert: <strong>${eur(qty * c.price)}</strong></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function kundenRender() {
+  const filter = document.getElementById('kunden-filter').value;
+  const ids = Object.keys(stock).sort((a, b) => parseFloat(a) - parseFloat(b));
+  let lines = ['✨ Olfazeta – Verfügbare Düfte\n'];
+  let lastKat = '';
+  ids.forEach(id => {
+    const q = stock[id].qty;
+    if (filter === 'verfuegbar' && q === 0) return;
+    const c = getCatalog(id); if (!c) return;
+    if (c.kat !== lastKat) { lines.push(`\n▸ ${c.kat.toUpperCase()}`); lastKat = c.kat; }
+    const avail = q === 0 ? ' [nicht verfügbar]' : '';
+    lines.push(`Nr. ${id} | ${c.name} – ${c.brand} | ${c.size} | ${eur(c.price)}${avail}`);
+  });
+  document.getElementById('kunden-output').textContent = lines.join('\n');
+}
+
+function copyKunden() {
+  const txt = document.getElementById('kunden-output').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Kopiert!';
+    setTimeout(() => { btn.textContent = '📋 Kopieren'; }, 2000);
+  });
+}
+
+function showTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+  if (name === 'kunden') kundenRender();
+  if (name === 'buchen') renderLog();
+}
+
+// Init
+renderBestand();
+renderLog();
+</script>
+</body>
+</html>
